@@ -551,6 +551,8 @@ namespace WpfFastCharting.Lib
             wnd.ShowDialog();
             ctrl.DoNotUpdate = true;
             ctrl.Source = null;
+
+            this.DoNotUpdate = false;
         }
 
         private RenderTargetBitmap CanvasRender { get; set; }
