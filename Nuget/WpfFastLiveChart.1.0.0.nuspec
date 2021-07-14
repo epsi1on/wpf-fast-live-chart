@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>WpfFastLiveChart</id>
+    <version>1.0.0</version>
+    <title>Wpf Fast Live Chart</title>
+    <authors>epsi1on</authors>
+    <owners>epsi1on</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/epsi1on/wpf-fast-live-chart</projectUrl>
+    <description>My package description.</description>
+    <summary>fast live chart in wpf uses writeable bitmap</summary>
+    <language>en-US</language>
+    <tags>wpf</tags>
+  </metadata>
+  <files>
+    
+  </files>
+</package>

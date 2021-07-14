@@ -7,12 +7,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WpfFastCharting.Lib")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("WPF-Live-Chart")]
+[assembly: AssemblyDescription("WPF Fast Live Charting Library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("N/A")]
 [assembly: AssemblyProduct("WpfFastCharting.Lib")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2021")]
+[assembly: AssemblyCopyright("Copyleft")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

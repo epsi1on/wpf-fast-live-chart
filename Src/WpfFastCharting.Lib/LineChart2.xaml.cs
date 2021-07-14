@@ -186,7 +186,7 @@ namespace WpfFastCharting.Lib
                             minY < double.MinValue || maxY > double.MaxValue)
                             return;
 
-                        Console.WriteLine(string.Format("data spans: {0},{1},{2},{3}", minX, maxX, minY, maxY));
+                        //Console.WriteLine(string.Format("data spans: {0},{1},{2},{3}", minX, maxX, minY, maxY));
 
                         var xTicks = GetScaleDetails(minX, maxX);
                         var yTicks = GetScaleDetails(minY, maxY);
@@ -423,6 +423,21 @@ namespace WpfFastCharting.Lib
 
         #region properties
 
+
+        public bool DoPopOut
+        {
+            get { return (bool)GetValue(DoPopOutProperty); }
+            set { SetValue(DoPopOutProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for DoPopOut.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DoPopOutProperty =
+            DependencyProperty.Register("DoPopOut", typeof(bool), typeof(LineChart), new PropertyMetadata(true));
+
+
+
+
+
         public bool DoNotUpdate
         {
             get { return (bool)GetValue(DoNotUpdateProperty); }
@@ -545,6 +560,7 @@ namespace WpfFastCharting.Lib
             ctrl.PointsToShow = this.PointsToShow;
             ctrl.ShowAllPoints = this.ShowAllPoints;
             ctrl.MaxFps = this.MaxFps;
+            ctrl.DoPopOut = false;
 
             wnd.Content = ctrl;
             this.DoNotUpdate = true;
