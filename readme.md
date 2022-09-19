@@ -28,3 +28,4 @@ public class ArrayMapper:IChartPointMapper
   }
 }
 ```
+From now wherever any object added to `objects`, control will be notified and redraws the chart. no need for manual update.
