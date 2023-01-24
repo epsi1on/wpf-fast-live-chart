@@ -14,6 +14,6 @@
     </Window.Resources>
 
     <Grid>
-        <chart:LineChart Source="{Binding Source}" PointMapper="{StaticResource mapper}" TailLength="100" MaxFps="1000" DrawMode="TailOfData" RefreshMode="Normal"/>
+        <chart:LineChart Source="{Binding Source}" PointMapper="{StaticResource mapper}" ShowGrids="False" TailLength="300" MaxFps="1000" DrawMode="TailOfData" RefreshMode="Ecgish"/>
     </Grid>
 </Window>

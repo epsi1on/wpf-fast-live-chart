@@ -69,8 +69,8 @@ namespace WpfFastCharting.Lib
 
         private void RecreateCanvas()
         {
-            w = mainImg.ActualWidth;
-            h = mainImg.ActualHeight;
+            w = this.ActualWidth;
+            h = this.ActualHeight;
 
             var max = 2000;
             var min = 100;
@@ -100,7 +100,8 @@ namespace WpfFastCharting.Lib
 
         private bool[] Simplified = new bool[10000];
 
-        
+        private double x0, xp0, xz0;//last draw, used for mode = Ecg
+
         private void RenderCanvas()
         {
             if (this.IsLocked())
@@ -184,6 +185,10 @@ namespace WpfFastCharting.Lib
 
                     using (locker)
                     {
+
+                        
+
+
                         double minX = double.MaxValue, minY = double.MaxValue;
                         double maxX = double.MinValue, maxY = double.MinValue;
 
@@ -214,6 +219,11 @@ namespace WpfFastCharting.Lib
 
                         //Console.WriteLine(string.Format("data spans: {0},{1},{2},{3}", minX, maxX, minY, maxY));
 
+                        if (RefreshMode == RefreshMode.Ecgish)
+                        {
+                            minX = maxX - TailLength;
+                        }
+
                         var xTicks = GetScaleDetails(minX, maxX);
                         var yTicks = GetScaleDetails(minY, maxY);
 
@@ -235,12 +245,48 @@ namespace WpfFastCharting.Lib
 
                         var t = new Thickness(40, 10, 10, 20);
 
-                        var transf = MatrixTransformation.FromWindow(minX, minY, maxX, maxY, w, h, t);
+                        MatrixTransformation transf;
+
+                        if (RefreshMode == RefreshMode.Normal)
+                        {
+                            transf = MatrixTransformation.FromWindow(minX, minY, maxX, maxY, w, h, t);
+                        }
+                        else
+                        {
+                            transf = MatrixTransformation.FromWindow(maxX-TailLength, minY, maxX, maxY, w, h, t);
+                        }
+                        
 
                         //var scX = (maxX - minX) / w;
                         //var scY = (maxY - minY) / h;
 
                         //BitmapFont.RegisterFontIfItsNot();
+
+                        var delta = 0.0;
+
+
+                        if (RefreshMode == RefreshMode.Ecgish)
+                        {
+                            var xp = transf.Transform(x0, 0).X;
+
+                            delta = xp0 - xp + w;
+
+                            if (xp >= w - delta)
+                            {
+                                //nothing
+                            }
+                            else
+                            {
+                                delta -= w;
+                            }
+
+                            delta = delta % w;
+                        }
+                        else
+                        {
+                            delta = 0;
+                        }
+                            
 
                         { //draw
 
@@ -249,6 +295,7 @@ namespace WpfFastCharting.Lib
                                 writeableBmp.Clear(Colors.White);
                                 //writeableBmp.FillRectangle(0, 0, (int)w, (int)h, Colors.White);
 
+                                if(ShowGrids)
                                 {//grid thicks
 
                                     {//vertical lines
@@ -265,6 +312,11 @@ namespace WpfFastCharting.Lib
 
                                             var p0 = transf.Transform(X, minY);
                                             var p1 = transf.Transform(X, maxY);
+
+                                            p0.X = (p0.X + delta) ;
+                                            if (p0.X > w) p0.X -= w;
+
+                                            p1.X = p0.X;
 
                                             writeableBmp.DrawLineDotted(p0, p1, Colors.Gray);
 
@@ -337,8 +389,42 @@ namespace WpfFastCharting.Lib
                                         var pp1 = transf.Transform(x1, y1);
                                         var pp2 = transf.Transform(x2, y2);
 
-                                        writeableBmp.DrawLine(pp1, pp2, Colors.Black, 1);
+
+                                        var xz1 = pp1.X;
+                                        var xz2 = pp2.X;
+
+                                        xz1 += delta;
+                                        xz2 += delta;
+
+                                        if (xz1 > w) xz1 -= w;
+                                        if (xz2 > w) xz2 -= w;
+
+
+                                        if (xz1 < xz2)
+                                            writeableBmp.DrawLineD(xz1, pp1.Y, xz2, pp2.Y, Colors.Black, 1);
+
+                                        
                                     }
+
+
+                                    if (RefreshMode == RefreshMode.Ecgish)
+                                    {
+                                        var obj = il[il.Count - 1];
+
+                                        double x, y;
+
+                                        map.Map(obj, out x, out y);
+
+                                        var xp = transf.Transform(x, y).X;
+
+                                        var xz = xp + delta;
+
+                                        
+                                        if (xz > w) xz -= w;
+
+                                        writeableBmp.DrawLineD(xz, 0, xz, h , Colors.Black, 5);
+                                    }
+
                                     /**/
                                 }
 
@@ -514,6 +600,16 @@ namespace WpfFastCharting.Lib
 
                 Dispatcher.Invoke(new Action(() => this.RenderCanvas()));
             }
+        }
+
+
+        public static readonly DependencyProperty ShowGridsProperty = DependencyProperty.Register(
+            nameof(ShowGrids), typeof(bool), typeof(LineChart), new PropertyMetadata(true));
+
+        public bool ShowGrids
+        {
+            get { return (bool)GetValue(ShowGridsProperty); }
+            set { SetValue(ShowGridsProperty, value); }
         }
 
 

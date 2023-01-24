@@ -97,7 +97,9 @@ namespace WpfFastCharting.Examples
 					Thread.Sleep(10);
 
 					x += 1;
-					var y = 0.5 - rnd.NextDouble();
+
+                    var y = Math.Sin(x / 10)+ 0.1*Math.Sin(x );
+                    y += 0.1 * (rnd.NextDouble() - 0.5);
 
 					var tpl = Tuple.Create(x, y);
 
