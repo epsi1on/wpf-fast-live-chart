@@ -116,11 +116,13 @@ namespace WpfFastCharting.Lib
                     if (DoNotUpdate)
                         return;
 
-                    var minInterval = 1 / MaxFps;
+                    {//preserve MAX FPS
+                        var minInterval = 1 / MaxFps;
 
-                    if (sp.ElapsedMilliseconds < LastUpdate + minInterval)
-                    {
-                        return;
+                        if (sp.ElapsedMilliseconds < LastUpdate + minInterval)
+                        {
+                            return;
+                        }
                     }
 
                     LastUpdate = sp.ElapsedMilliseconds;
@@ -150,10 +152,34 @@ namespace WpfFastCharting.Lib
 
                     var map = this.PointMapper;
 
-                    var cnt = PointsToShow;//show count
+                    double latestX;//latest data X
+                    int startX = -1;//start index of point for render
 
-                    if (ShowAllPoints)
+                    {
+                        double y;
+
+                        map.Map(il[il.Count - 1], out latestX, out y);
+
+                        double tmpX, tmpY;
+
+                        for (int i = il.Count-1; i >= 0; i--)
+                        {
+                            map.Map(il[i], out tmpX, out tmpY);
+
+                            if (latestX - tmpX > TailLength)
+                            {
+                                startX = i;
+                                break;
+                            }
+                        }
+                    }
+
+
+                    var cnt = il.Count - startX;//show count
+
+                    if (DrawMode == DrawMode.AllOfData)
                         cnt = int.MaxValue;
+
 
 
                     using (locker)
@@ -483,12 +509,15 @@ namespace WpfFastCharting.Lib
 
         private void Old_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Dispatcher.Invoke(new Action(() => this.RenderCanvas()));
-            ;
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+
+                Dispatcher.Invoke(new Action(() => this.RenderCanvas()));
+            }
         }
 
 
-
+        [Obsolete("user DurationToShow instead")]
         //last points to show (count)
         //صد تا نقطه آخر رو نشون بده
         public int PointsToShow
@@ -497,12 +526,26 @@ namespace WpfFastCharting.Lib
             set { SetValue(PointsToShowProperty, value); }
         }
 
+        
+        
+
+
+        public static readonly DependencyProperty TailLengthProperty = DependencyProperty.Register(
+            nameof(TailLength), typeof(double), typeof(LineChart), new PropertyMetadata(10.0));
+
+        public double TailLength
+        {
+            get { return (double)GetValue(TailLengthProperty); }
+            set { SetValue(TailLengthProperty, value); }
+        }
+
+        
         // Using a DependencyProperty as the backing store for PointsToShow.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty PointsToShowProperty =
             DependencyProperty.Register("PointsToShow", typeof(int), typeof(LineChart), new PropertyMetadata(100));
 
-
-
+        /*
+        [Obsolete]
         //show all points (PointsToShow = infinity)
         public bool ShowAllPoints
         {
@@ -514,8 +557,8 @@ namespace WpfFastCharting.Lib
         public static readonly DependencyProperty ShowAllPointsProperty =
             DependencyProperty.Register("ShowAllPoints", typeof(bool), typeof(LineChart), new PropertyMetadata(true));
 
-
-
+        */
+        //maximum frame per second render
         public double MaxFps
         {
             get { return (double)GetValue(MaxFpsProperty); }
@@ -541,6 +584,28 @@ namespace WpfFastCharting.Lib
             DependencyProperty.Register("PointMapper", typeof(IChartPointMapper), typeof(LineChart), new PropertyMetadata(null));
 
 
+
+
+        public static readonly DependencyProperty DrawModeProperty = DependencyProperty.Register(
+            nameof(DrawMode), typeof(DrawMode), typeof(LineChart), new PropertyMetadata(default(DrawMode)));
+
+        public DrawMode DrawMode
+        {
+            get { return (DrawMode)GetValue(DrawModeProperty); }
+            set { SetValue(DrawModeProperty, value); }
+        }
+
+
+        public static readonly DependencyProperty RefreshModeProperty = DependencyProperty.Register(
+            nameof(RefreshMode), typeof(RefreshMode), typeof(LineChart), new PropertyMetadata(default(RefreshMode)));
+
+        public RefreshMode RefreshMode
+        {
+            get { return (RefreshMode)GetValue(RefreshModeProperty); }
+            set { SetValue(RefreshModeProperty, value); }
+        }
+
+
         #endregion
 
         //public delegate void TranslateDelegate(object obj, out double x, out double y);
@@ -557,8 +622,11 @@ namespace WpfFastCharting.Lib
 
             ctrl.Source = this.Source;
             ctrl.PointMapper = this.PointMapper;
-            ctrl.PointsToShow = this.PointsToShow;
-            ctrl.ShowAllPoints = this.ShowAllPoints;
+            //ctrl.PointsToShow = this.PointsToShow;
+            ctrl.DrawMode = this.DrawMode;
+            ctrl.RefreshMode = this.RefreshMode;
+            ctrl.TailLength = this.TailLength;
+            //ctrl.ShowAllPoints = this.ShowAllPoints;
             ctrl.MaxFps = this.MaxFps;
             ctrl.DoPopOut = false;
 

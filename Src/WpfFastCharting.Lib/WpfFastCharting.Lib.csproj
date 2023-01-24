@@ -8,7 +8,7 @@
     <OutputType>library</OutputType>
     <RootNamespace>WpfFastCharting.Lib</RootNamespace>
     <AssemblyName>WpfFastCharting.Lib</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChartPointMapper.cs" />
+    <Compile Include="DrawMode.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="LineChart2.xaml.cs">
       <DependentUpon>LineChart2.xaml</DependentUpon>
@@ -86,6 +87,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="RefreshMode.cs" />
     <Compile Include="WriteableBitmapFontManager.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -96,12 +98,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WpfFastCharting.Examples\WpfFastCharting.Examples.csproj">
-      <Project>{2c01f136-3b07-4351-905e-291f6c387305}</Project>
-      <Name>WpfFastCharting.Examples</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

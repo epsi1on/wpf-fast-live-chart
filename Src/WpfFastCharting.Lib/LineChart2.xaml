@@ -10,21 +10,29 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid Margin="0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="40"/>
-        </Grid.RowDefinitions>
+
         <Image x:Name="mainImg" Margin="0,0,0,-0.4" Grid.RowSpan="2" Grid.ColumnSpan="3" />
-        <Border Grid.Row="1" Grid.ColumnSpan="3" Background="White" Opacity="0.75">
+
+
+
+        <Grid  Background="AliceBlue" VerticalAlignment="Bottom" Height="40" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="64*"/>
+                <ColumnDefinition Width="203*"/>
+                <ColumnDefinition Width="76*"/>
+                <ColumnDefinition Width="191*"/>
+                <ColumnDefinition Width="267*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Content="Pup Out" Visibility="{Binding DoPopOut, Converter={StaticResource BooleanToVisibilityConverter},  RelativeSource={RelativeSource AncestorType={x:Type local:LineChart}}}" HorizontalAlignment="Left" Click="BtnPopOut_Click" Grid.Column="4" Margin="5,5,0,5"/>
             
-        </Border>
-        <Button Content="Pup Out" Visibility="{Binding DoPopOut, Converter={StaticResource BooleanToVisibilityConverter},  RelativeSource={RelativeSource AncestorType={x:Type local:LineChart}}}" HorizontalAlignment="Left" Click="BtnPopOut_Click" Grid.Column="2" Grid.Row="1" Margin="5"/>
-        <CheckBox Content="Freeze" Margin="5" Grid.Row="1" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:LineChart}}, Path=DoNotUpdate}" Grid.Column="0"/>
-        <CheckBox Content="ShowAll" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:LineChart}}, Path=ShowAllPoints}"  Margin="5,5.4,5,4.6" Grid.Row="1" Grid.Column="1"/>
+            <TextBlock Text="Refresh Mode" Margin="5,5,5,5" Grid.Column="0" Grid.ColumnSpan="2"/>
+
+            
+            <TextBlock Text="Draw Mode"  Margin="5,5,5,5" Grid.Column="2" Grid.ColumnSpan="2"/>
+
+        </Grid>
+
+
     </Grid>
 </UserControl>

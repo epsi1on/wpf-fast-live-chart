@@ -5,8 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfFastCharting.Examples"
         xmlns:t="clr-namespace:WpfFastCharting.Examples"
+        xmlns:chart="clr-namespace:WpfFastCharting.Lib;assembly=WpfFastCharting.Lib"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+
+    <Window.Resources>
+        <local:TuplePointMapper  x:Key="mapper" />
+    </Window.Resources>
+
     <Grid>
+        <chart:LineChart Source="{Binding Source}" PointMapper="{StaticResource mapper}" TailLength="100" MaxFps="1000" DrawMode="TailOfData" RefreshMode="Normal"/>
     </Grid>
 </Window>
