@@ -92,6 +92,9 @@ namespace WpfFastCharting.Examples
 
 				double x = 0;
 
+                var frequency = 10000;
+
+
 				while (true)
 				{
 					Thread.Sleep(10);
