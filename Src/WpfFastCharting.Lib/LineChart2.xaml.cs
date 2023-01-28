@@ -72,7 +72,7 @@ namespace WpfFastCharting.Lib
             w = this.ActualWidth;
             h = this.ActualHeight;
 
-            var max = 2000;
+            var max = int.MaxValue;
             var min = 100;
 
             w = Math.Min(w, max);
@@ -82,7 +82,7 @@ namespace WpfFastCharting.Lib
             h = Math.Max(h, min);
 
             Canvas = BitmapFactory.New((int)w, (int)h);
-            mainImg.Source = Canvas;
+            MainImg.Source = Canvas;
 
             CanvasRender = new RenderTargetBitmap(Canvas.PixelWidth, Canvas.PixelHeight, Canvas.DpiX, Canvas.DpiY, Canvas.Format);
 
@@ -101,12 +101,16 @@ namespace WpfFastCharting.Lib
         private bool[] Simplified = new bool[10000];
 
         private double x0, xp0, xz0;//last draw, used for mode = Ecg
+        private double lastPointX;
+        private double lastWindowEnd = 0;
+
 
         private void RenderCanvas()
         {
             if (this.IsLocked())
                 return;
 
+            
             //try
             {
                 using (new Locker(this))
@@ -167,7 +171,7 @@ namespace WpfFastCharting.Lib
                         {
                             map.Map(il[i], out tmpX, out tmpY);
 
-                            if (latestX - tmpX > TailLength)
+                            if (latestX - tmpX > TailSpanWidth)
                             {
                                 startX = i;
                                 break;
@@ -181,14 +185,8 @@ namespace WpfFastCharting.Lib
                     if (DrawMode == DrawMode.AllOfData)
                         cnt = int.MaxValue;
 
-
-
                     using (locker)
                     {
-
-                        
-
-
                         double minX = double.MaxValue, minY = double.MaxValue;
                         double maxX = double.MinValue, maxY = double.MinValue;
 
@@ -219,14 +217,18 @@ namespace WpfFastCharting.Lib
 
                         //Console.WriteLine(string.Format("data spans: {0},{1},{2},{3}", minX, maxX, minY, maxY));
 
-                        if (RefreshMode == RefreshMode.Ecgish)
+                        if (DrawMode == DrawMode.TailOfData)
                         {
-                            minX = maxX - TailLength;
+                            minX = maxX - TailSpanWidth;
                         }
+
+                        
+
 
                         var xTicks = GetScaleDetails(minX, maxX);
                         var yTicks = GetScaleDetails(minY, maxY);
 
+                        /*
                         {//
                             minX = (double)xTicks.Item1;
                             maxX = (double)xTicks.Item2;
@@ -234,6 +236,7 @@ namespace WpfFastCharting.Lib
                             minY = (double)yTicks.Item1;
                             maxY = (double)yTicks.Item2;
                         }
+                        */
 
 
                         var absMaxX = Math.Max(Math.Abs(minX), Math.Abs(maxX));
@@ -242,51 +245,73 @@ namespace WpfFastCharting.Lib
                         var lx = (int)Math.Log10(absMaxX) + 1;
                         var ly = (int)Math.Log10(absMaxY) + 1;
 
+                        var t = new Thickness(100, 10, 10, 20);
 
-                        var t = new Thickness(40, 10, 10, 20);
+                        var wp = w - t.Left - t.Right;
+                        var hp = h - t.Bottom - t.Top;
 
-                        MatrixTransformation transf;
 
-                        if (RefreshMode == RefreshMode.Normal)
+
+                        OneDTransformation xtrans, ytrans;
+
+
                         {
-                            transf = MatrixTransformation.FromWindow(minX, minY, maxX, maxY, w, h, t);
+                            //var minx_ = RefreshMode == RefreshMode.Normal ? minX : maxX - TailSpanWidth;
+
+                            xtrans = OneDTransformation.FromInOut(minX, maxX, 0 + t.Left, w - t.Right);
+
+                            if (YScaleMode == ScaleMode.Manual)
+                                ytrans = new OneDTransformation(YScale, h / 2 - t.Top);
+                            else
+                                ytrans = OneDTransformation.FromInOut(minY, maxY, h - t.Bottom, t.Top);
+
                         }
-                        else
-                        {
-                            transf = MatrixTransformation.FromWindow(maxX-TailLength, minY, maxX, maxY, w, h, t);
-                        }
-                        
 
-                        //var scX = (maxX - minX) / w;
-                        //var scY = (maxY - minY) / h;
-
-                        //BitmapFont.RegisterFontIfItsNot();
-
+                        /*
                         var delta = 0.0;
-
 
                         if (RefreshMode == RefreshMode.Ecgish)
                         {
-                            var xp = transf.Transform(x0, 0).X;
+                            var xp = xtrans.Transform(x0);
 
-                            delta = xp0 - xp + w;
+                            delta = xp0 - xp;
 
-                            if (xp >= w - delta)
+                            if (xp >= wp - delta)
                             {
                                 //nothing
                             }
                             else
                             {
-                                delta -= w;
+                                //delta -= wp;
                             }
 
-                            delta = delta % w;
+                            delta = 0;//delta % wp;
                         }
                         else
                         {
                             delta = 0;
                         }
-                            
+                        */
+
+                        //correct x for ecg mode
+
+                        var correctXp = new Func<double, double>(xp =>
+                        {
+
+                            if (DrawMode !=DrawMode.TailOfDataEkg)
+                                return xp;
+
+                            //mahalle boresh ine
+                            var lastWindowEndpP = xtrans.Transform(lastWindowEnd);
+
+                            var xpmin = xtrans.Transform(minX);
+                            var xpmax = xtrans.Transform(maxX);
+
+                            if (xp > lastWindowEndpP)
+                                return xp - (lastWindowEndpP - xpmin);
+                            else
+                                return xp - (lastWindowEndpP - xpmax);
+                        });
 
                         { //draw
 
@@ -307,26 +332,20 @@ namespace WpfFastCharting.Lib
                                         {
                                             var X = (double)(minX + (deltaX * i) / xCnt);
 
-                                            //if (i == xCnt)
-                                            //    X--;
+                                            var px = xtrans.Transform(X);
 
-                                            var p0 = transf.Transform(X, minY);
-                                            var p1 = transf.Transform(X, maxY);
+                                            px = correctXp(px);//.X = (p0.X + delta) ;
 
-                                            p0.X = (p0.X + delta) ;
-                                            if (p0.X > w) p0.X -= w;
-
-                                            p1.X = p0.X;
-
-                                            writeableBmp.DrawLineDotted(p0, p1, Colors.Gray);
+                                            writeableBmp.DrawLineDotted(px, t.Top, px, h - t.Bottom, Colors.Gray);
 
                                             if (i % 4 == 0)
                                             {
-                                                writeableBmp.DrawLine(p0, p1, Colors.Gray, 2);
+                                                writeableBmp.DrawLineD(px, t.Top, px, h - t.Bottom, Colors.Gray, 2);
 
-                                                var pp = p0;
+                                                var pp = new Point();
+
                                                 pp.Y = h - 20;// - transf.t.Right;
-                                                pp.X -= 10;
+                                                pp.X = px - 10;
 
                                                 textWriter.DrawString(writeableBmp, pp, X.ToString("N2"));
                                             }
@@ -348,18 +367,24 @@ namespace WpfFastCharting.Lib
                                             //if (i == yCnt)
                                             //    Y--;
 
-                                            var p0 = transf.Transform(minX, Y);
-                                            var p1 = transf.Transform(maxX, Y);
+                                            var py = ytrans.Transform(Y);
 
-                                            writeableBmp.DrawLineDotted(p0, p1, Colors.Gray);
+                                            //var p0 = transf.Transform(minX, Y);
+                                            //var p1 = transf.Transform(maxX, Y);
+
+                                            writeableBmp.DrawLineDotted(t.Left, py, w - t.Right, py, Colors.Gray);
+
+                                            //writeableBmp.DrawLineDotted(p0, p1, Colors.Gray);
 
                                             if (i % 4 == 0)
                                             {
-                                                writeableBmp.DrawLine(p0, p1, Colors.Gray, 2);
+                                                writeableBmp.DrawLineD(t.Left, py, w - t.Right, py, Colors.Gray);
+                                                //writeableBmp.DrawLine(p0, p1, Colors.Gray, 2);
 
-                                                var pp = p0;
+                                                var pp = new Point();
+
                                                 pp.X = 0;// - transf.t.Right;
-                                                pp.Y -= 12;
+                                                pp.Y = py - 12;
 
                                                 textWriter.DrawString(writeableBmp, pp, Y.ToString("N2"));
                                             }
@@ -368,9 +393,6 @@ namespace WpfFastCharting.Lib
                                         /**/
                                     }
 
-                                    {
-
-                                    }
                                 }
 
 
@@ -386,44 +408,49 @@ namespace WpfFastCharting.Lib
                                         map.Map(o1, out x1, out y1);
                                         map.Map(o2, out x2, out y2);
 
-                                        var pp1 = transf.Transform(x1, y1);
-                                        var pp2 = transf.Transform(x2, y2);
 
+                                        var xp1 = xtrans.Transform(x1);
+                                        var xp2 = xtrans.Transform(x2);
 
-                                        var xz1 = pp1.X;
-                                        var xz2 = pp2.X;
+                                        var yp1 = ytrans.Transform(y1);
+                                        var yp2 = ytrans.Transform(y2);
 
-                                        xz1 += delta;
-                                        xz2 += delta;
-
-                                        if (xz1 > w) xz1 -= w;
-                                        if (xz2 > w) xz2 -= w;
-
+                                        var xz1 = correctXp(xp1);
+                                        var xz2 = correctXp(xp2);
 
                                         if (xz1 < xz2)
-                                            writeableBmp.DrawLineD(xz1, pp1.Y, xz2, pp2.Y, Colors.Black, 1);
-
-                                        
+                                            writeableBmp.DrawLineD(xz1, yp1, xz2, yp2, Colors.Black, 1);
                                     }
 
-
-                                    if (RefreshMode == RefreshMode.Ecgish)
+                                    /**/
+                                    if (DrawMode == DrawMode.TailOfDataEkg)
                                     {
-                                        var obj = il[il.Count - 1];
-
+                                        var o1 = il[il.Count - 1];
+                                        
                                         double x, y;
 
-                                        map.Map(obj, out x, out y);
+                                        map.Map(o1, out x, out y);
 
-                                        var xp = transf.Transform(x, y).X;
+                                        if (x - lastWindowEnd >= TailSpanWidth)
+                                        {
+                                            do
+                                            {
+                                                lastWindowEnd += TailSpanWidth;
+                                            } while (lastWindowEnd + TailSpanWidth < maxX);
 
-                                        var xz = xp + delta;
+                                        }
 
-                                        
-                                        if (xz > w) xz -= w;
+                                        var xz = correctXp(xtrans.Transform(x));
+                                        var yp = ytrans.Transform(y);
 
-                                        writeableBmp.DrawLineD(xz, 0, xz, h , Colors.Black, 5);
-                                    }
+                                        var www = 3;
+
+                                        writeableBmp.FillRectangle((int)xz - www, (int)yp - www, (int)xz + www, (int)yp + www,
+                                            Colors.Black);
+
+                                        writeableBmp.DrawLine((int)xz, (int)t.Top, (int)xz, (int)(h - t.Bottom),
+                                            Colors.Black);
+                                    } /**/
 
                                     /**/
                                 }
@@ -626,13 +653,13 @@ namespace WpfFastCharting.Lib
         
 
 
-        public static readonly DependencyProperty TailLengthProperty = DependencyProperty.Register(
-            nameof(TailLength), typeof(double), typeof(LineChart), new PropertyMetadata(10.0));
+        public static readonly DependencyProperty TailSpanWidthProperty = DependencyProperty.Register(
+            nameof(TailSpanWidth), typeof(double), typeof(LineChart), new PropertyMetadata(10.0));
 
-        public double TailLength
+        public double TailSpanWidth
         {
-            get { return (double)GetValue(TailLengthProperty); }
-            set { SetValue(TailLengthProperty, value); }
+            get { return (double)GetValue(TailSpanWidthProperty); }
+            set { SetValue(TailSpanWidthProperty, value); }
         }
 
         
@@ -692,15 +719,26 @@ namespace WpfFastCharting.Lib
         }
 
 
-        public static readonly DependencyProperty RefreshModeProperty = DependencyProperty.Register(
-            nameof(RefreshMode), typeof(RefreshMode), typeof(LineChart), new PropertyMetadata(default(RefreshMode)));
 
-        public RefreshMode RefreshMode
+        public static readonly DependencyProperty YScaleProperty = DependencyProperty.Register(
+            nameof(YScale), typeof(double), typeof(LineChart), new PropertyMetadata(0.0));
+
+        public double YScale
         {
-            get { return (RefreshMode)GetValue(RefreshModeProperty); }
-            set { SetValue(RefreshModeProperty, value); }
+            get { return (double)GetValue(YScaleProperty); }
+            set { SetValue(YScaleProperty, value); }
         }
 
+
+
+        public static readonly DependencyProperty YScaleModeProperty = DependencyProperty.Register(
+            nameof(YScaleMode), typeof(ScaleMode), typeof(LineChart), new PropertyMetadata(ScaleMode.Auto));
+
+        public ScaleMode YScaleMode
+        {
+            get { return (ScaleMode)GetValue(YScaleModeProperty); }
+            set { SetValue(YScaleModeProperty, value); }
+        }
 
         #endregion
 
@@ -720,8 +758,7 @@ namespace WpfFastCharting.Lib
             ctrl.PointMapper = this.PointMapper;
             //ctrl.PointsToShow = this.PointsToShow;
             ctrl.DrawMode = this.DrawMode;
-            ctrl.RefreshMode = this.RefreshMode;
-            ctrl.TailLength = this.TailLength;
+            ctrl.TailSpanWidth = this.TailSpanWidth;
             //ctrl.ShowAllPoints = this.ShowAllPoints;
             ctrl.MaxFps = this.MaxFps;
             ctrl.DoPopOut = false;

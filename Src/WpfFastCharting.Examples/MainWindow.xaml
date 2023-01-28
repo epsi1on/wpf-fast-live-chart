@@ -6,14 +6,32 @@
         xmlns:local="clr-namespace:WpfFastCharting.Examples"
         xmlns:t="clr-namespace:WpfFastCharting.Examples"
         xmlns:chart="clr-namespace:WpfFastCharting.Lib;assembly=WpfFastCharting.Lib"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
 
     <Window.Resources>
         <local:TuplePointMapper  x:Key="mapper" />
+
+        <ObjectDataProvider x:Key="drawModeItems" MethodName="GetValues"
+                            ObjectType="{x:Type System:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="chart:DrawMode"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+
     </Window.Resources>
 
-    <Grid>
-        <chart:LineChart Source="{Binding Source}" PointMapper="{StaticResource mapper}" ShowGrids="False" TailLength="300" MaxFps="1000" DrawMode="TailOfData" RefreshMode="Ecgish"/>
+    <Grid Background="Aqua">
+
+        <chart:LineChart x:Name="lineChart" Source="{Binding Source}" PointMapper="{StaticResource mapper}" ShowGrids="False" TailSpanWidth="31.4156" YScaleMode="Manual"
+                         MaxFps="1000" DrawMode="TailOfData" YScale="100"  Margin="50" Loaded="LineChart_Loaded"/>
+
+        <StackPanel>
+            <CheckBox IsChecked="{Binding ShowGrids, ElementName=lineChart}" Content="Show Grids"></CheckBox>
+
+            <ComboBox SelectedItem="{Binding DrawMode, ElementName=lineChart}" ItemsSource="{Binding Source={StaticResource drawModeItems}}" ></ComboBox>
+        </StackPanel>
     </Grid>
 </Window>

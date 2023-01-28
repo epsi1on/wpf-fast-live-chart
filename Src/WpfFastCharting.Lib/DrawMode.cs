@@ -10,6 +10,12 @@ namespace WpfFastCharting.Lib
     {
         AllOfData=0,//all of data
         TailOfData,//just end piece of data
-
+        TailOfDataEkg//elektro cardio like 
+    }
+    
+    public enum ScaleMode
+    {
+        Auto,
+        Manual
     }
 }

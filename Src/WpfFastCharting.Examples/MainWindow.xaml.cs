@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -94,21 +95,28 @@ namespace WpfFastCharting.Examples
 
                 var frequency = 10000;
 
+                var sp = Stopwatch.StartNew();
 
 				while (true)
 				{
-					Thread.Sleep(10);
+					Thread.Sleep(1);
 
-					x += 1;
+                    x = sp.Elapsed.TotalSeconds;
 
-                    var y = Math.Sin(x / 10)+ 0.1*Math.Sin(x );
-                    y += 0.1 * (rnd.NextDouble() - 0.5);
+                    var y = Math.Sin(x) + 0.10 * Math.Sin(x * 11.214894);
+
+                    y += 1 / x * 0.31 * (rnd.NextDouble() - 0.5);
 
 					var tpl = Tuple.Create(x, y);
 
 					source.Add(tpl);
 				}
 			}
+        }
+
+        private void LineChart_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 

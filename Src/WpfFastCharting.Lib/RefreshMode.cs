@@ -6,9 +6,5 @@ using System.Threading.Tasks;
 
 namespace WpfFastCharting.Lib
 {
-    public enum  RefreshMode
-    {
-        Normal =0,//
-        Ecgish// like electro cardio graph
-    }
+   
 }

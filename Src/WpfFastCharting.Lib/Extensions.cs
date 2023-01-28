@@ -57,9 +57,15 @@ namespace WpfFastCharting.Lib
             DrawLine(bmp, p1, p2, Colors.Black, thickness);
         }
 
-        public static void DrawLineDotted(this WriteableBitmap bmp, Point p1, Point p2,Color cl)
+        public static void DrawLineDotted(this WriteableBitmap bmp, Point p1, Point p2, Color cl)
         {
             bmp.DrawLineDotted((int)p1.X, (int)p1.Y, (int)p2.X, (int)p2.Y, 3, 3, cl);
+        }
+
+
+        public static void DrawLineDotted(this WriteableBitmap bmp, double x1, double y1, double x2,double y2, Color cl)
+        {
+            bmp.DrawLineDotted((int)x1, (int)y1, (int)x2, (int)y2, 3, 3, cl);
         }
 
         public static void DrawString(this WriteableBitmap bmp, Point p1, string text, WriteableBitmap rbmp,Dictionary<char,Rect> dic)

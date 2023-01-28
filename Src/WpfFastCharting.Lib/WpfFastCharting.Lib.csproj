@@ -74,6 +74,7 @@
       <DependentUpon>LineChart2.xaml</DependentUpon>
     </Compile>
     <Compile Include="MatrixTrasnformation.cs" />
+    <Compile Include="OneDTransformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
