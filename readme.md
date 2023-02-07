@@ -29,3 +29,15 @@ public class ArrayMapper:IChartPointMapper
 }
 ```
 From now wherever any object added to `objects`, control will be notified and redraws the chart. no need for manual update.
+
+# Features
+
+## Modes
+have 3 modes, set with `LineChart2.DrawMode`:
+
+`DrawMode.AllOfData`: Whole data is drawn on canvas
+
+`DrawMode.TailOfData`: Only certain amount of tail of data is drawn
+`DrawMode.TailOfDataEkg`: Only certain amount of tail of data is drawn, in electro kardio graphic mode (heart bit monitor)
+
+
