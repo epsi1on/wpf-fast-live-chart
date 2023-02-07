@@ -217,7 +217,7 @@ namespace WpfFastCharting.Lib
 
                         //Console.WriteLine(string.Format("data spans: {0},{1},{2},{3}", minX, maxX, minY, maxY));
 
-                        if (DrawMode == DrawMode.TailOfData)
+                        if (DrawMode == DrawMode.TailOfData || DrawMode == DrawMode.TailOfDataEkg)
                         {
                             minX = maxX - TailSpanWidth;
                         }
@@ -624,7 +624,6 @@ namespace WpfFastCharting.Lib
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
             {
-
                 Dispatcher.Invoke(new Action(() => this.RenderCanvas()));
             }
         }

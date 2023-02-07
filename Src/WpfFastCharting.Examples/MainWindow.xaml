@@ -25,7 +25,7 @@
 
     <Grid Background="Aqua">
 
-        <chart:LineChart x:Name="lineChart" Source="{Binding Source}" PointMapper="{StaticResource mapper}" ShowGrids="False" TailSpanWidth="31.4156" YScaleMode="Manual"
+        <chart:LineChart x:Name="lineChart" Source="{Binding Source}" PointMapper="{StaticResource mapper}" ShowGrids="False" TailSpanWidth="6.2831853" YScaleMode="Manual"
                          MaxFps="1000" DrawMode="TailOfData" YScale="100"  Margin="50" Loaded="LineChart_Loaded"/>
 
         <StackPanel>
